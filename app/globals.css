@@ -110,7 +110,7 @@ a { color: inherit; }
 
 /* Signaturkit: vätskefyllning och linjer */
 .liq { position: relative; overflow: hidden; isolation: isolate; transition: color .6s ease, border-color .6s ease; }
-.liq::before { content: ""; position: absolute; z-index: -1; left: -15%; width: 130%; bottom: 0; height: 165%; transform: translateY(100%); background: var(--accent); border-radius: 46% 46% 0 0; transition: transform .95s cubic-bezier(.2,.75,.25,1); pointer-events: none; }
+.liq::before { content: ""; position: absolute; z-index: -1; left: -15%; width: 130%; bottom: 0; height: 165%; transform: translateY(104%); background: var(--accent); border-radius: 46% 46% 0 0; transition: transform .95s cubic-bezier(.2,.75,.25,1); pointer-events: none; }
 .liq:hover, .liq:focus-visible { color: #fff; border-color: transparent; }
 .liq:hover::before, .liq:focus-visible::before { transform: translateY(0); }
 .nav-link { position: relative; }
