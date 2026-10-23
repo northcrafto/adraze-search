@@ -6,7 +6,7 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "sw
 
 export const metadata: Metadata = {
   title: { default: "AdRaze Search", template: "%s · AdRaze Search" },
-  description: "Sök utan att bli sökt. Ingen logg, ingen profil, inga spår. Sökmotorn i webbläsaren AdRaze.",
+  description: "Sökmotorn i webbläsaren AdRaze. Webb, bilder, videor, nyheter och kartor utan logg.",
   robots: { index: true, follow: true },
 };
 
