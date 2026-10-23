@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* AdRaze Search – svart, off-white och AdRazes orange som enda accent. */
+:root {
+  color-scheme: dark;
+  --bg: #0b0b0d;
+  --surface: #141417;
+  --surface-2: #1c1c20;
+  --line: #2a2a2e;
+  --text: #f2f2f4;
+  --dim: #9a9ca3;
+  --accent: #ff4b1f;
+  --accent-soft: #ff8a66;
+}
+@theme {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; overflow-x: clip; }
+body { background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; overflow-wrap: anywhere; }
+::selection { background: var(--accent); color: #1f0700; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: inherit; }
+
+.box { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 0 16px; transition: border-color .15s, box-shadow .15s; box-shadow: 0 10px 30px rgb(0 0 0 / .35); }
+.box:focus-within { border-color: rgb(255 75 31 / .6); box-shadow: 0 0 0 3px rgb(255 75 31 / .12); }
+.box input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 18px; height: 58px; color: var(--text); }
+.box input::placeholder { color: #6f6f76; }
+.box.small { box-shadow: none; border-radius: 14px; }
+.box.small input { height: 44px; font-size: 15px; }
+.sugg { position: absolute; left: 0; right: 0; top: calc(100% + 6px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; z-index: 20; box-shadow: 0 18px 44px rgb(0 0 0 / .5); }
+.sugg button { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 14px; font: inherit; font-size: 15px; color: var(--text); background: transparent; border: 0; cursor: pointer; }
+.sugg button:hover, .sugg button.sel { background: rgb(255 255 255 / .06); }
+.sugg button svg { flex: none; color: var(--dim); }
+.sugg b { font-weight: 700; }
+
+.tab { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--dim); }
+.tab:hover { color: var(--text); background: rgb(255 255 255 / .06); }
+.tab.on { color: #fff; background: rgb(255 75 31 / .18); }
+
+.res { padding: 14px 14px; margin: 0 -14px; border-radius: 14px; transition: background .12s; }
+.res:hover { background: rgb(255 255 255 / .03); }
+.res .host { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--dim); }
+.res .host img { width: 16px; height: 16px; border-radius: 4px; }
+.res h3 { margin-top: 3px; font-size: 18px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
+.res h3 a:hover { text-decoration: underline; text-underline-offset: 3px; color: var(--accent-soft); }
+.res .host span { max-width: 40ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.res p { margin-top: 4px; font-size: 14.5px; line-height: 1.55; color: #c9ccd2; }
+
+
+.imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.imgs a { display: block; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+.imgs a:hover { border-color: rgb(255 75 31 / .5); }
+.imgs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.imgs span { display: block; padding: 7px 10px; font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 600; color: var(--text); }
+.pill:hover { background: var(--surface-2); }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .6s cubic-bezier(.16,1,.3,1) both; }
+}
+
+.vids { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.vid { display: flex; flex-direction: column; gap: 8px; border-radius: 14px; }
+.vthumb { position: relative; display: block; border-radius: 12px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); aspect-ratio: 16 / 9; }
+.vthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vthumb-empty { display: block; width: 100%; height: 100%; }
+.vlen { position: absolute; right: 8px; bottom: 8px; padding: 2px 7px; border-radius: 6px; background: rgb(0 0 0 / .75); color: #fff; font-size: 12px; font-weight: 600; }
+.vid:hover .vthumb { border-color: rgb(255 75 31 / .5); }
+.vtxt { display: flex; flex-direction: column; gap: 3px; }
+.vtitle { font-size: 14.5px; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.vhost { font-size: 12.5px; color: var(--dim); }
+
+/* Startsidan. Formregel: sökruta 18px, alla knappar pill. */
+.seg { display: inline-flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; gap: 2px; padding: 3px; border-radius: 999px; background: rgb(255 255 255 / .04); border: 1px solid var(--line); }
+.seg button { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 15px; border-radius: 999px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--dim); cursor: pointer; white-space: nowrap; flex: none; transition: color .15s, background .15s; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button:hover { color: var(--text); }
+@media (max-width: 640px) { .seg button { padding: 0 12px; font-size: 13.5px; } }
+.seg button[aria-checked="true"] { color: #1f0700; background: var(--accent-soft); }
+.seg button:active { transform: scale(.98); }
