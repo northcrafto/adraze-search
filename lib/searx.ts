@@ -18,7 +18,7 @@ function headers(): Record<string, string> {
   return h;
 }
 
-export type Cat = "general" | "images" | "videos" | "news";
+export type Cat = "general" | "images" | "videos" | "news" | "map";
 
 export type Result = {
   url: string;
@@ -30,6 +30,10 @@ export type Result = {
   thumbnail?: string;
   publishedDate?: string | null;
   length?: string;
+  latitude?: number;
+  longitude?: number;
+  boundingbox?: number[];
+  address?: { name?: string; road?: string; house_number?: string; postcode?: string; locality?: string; country?: string } | null;
 };
 
 export type SearchResponse = {

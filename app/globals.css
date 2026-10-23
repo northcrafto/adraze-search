@@ -80,3 +80,40 @@ a { color: inherit; }
 @media (max-width: 640px) { .seg button { padding: 0 12px; font-size: 13.5px; } }
 .seg button[aria-checked="true"] { color: #1f0700; background: var(--accent-soft); }
 .seg button:active { transform: scale(.98); }
+
+/* Kartor */
+.map { position: relative; height: 440px; overflow: hidden; border-radius: 16px; border: 1px solid var(--line); background: #e8e4dc; margin: 0; }
+.map img { position: absolute; width: 256px; height: 256px; max-width: none; user-select: none; }
+.map-pin { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -22px 0 0 -11px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--accent); border: 3px solid #fff; box-shadow: 0 4px 12px rgb(0 0 0 / .35); }
+.map figcaption { position: absolute; right: 8px; bottom: 6px; padding: 1px 6px; border-radius: 4px; background: rgb(255 255 255 / .8); color: #333; font-size: 11px; }
+.place { display: block; padding: 12px 14px; margin: 0 -14px; border-radius: 12px; transition: background .12s; }
+.place:hover { background: rgb(255 255 255 / .04); }
+.place.on { background: rgb(255 75 31 / .1); box-shadow: inset 2px 0 0 var(--accent); }
+.place b { display: block; font-size: 16px; font-weight: 600; }
+.place small { display: block; margin-top: 2px; font-size: 13.5px; color: var(--dim); }
+
+/* Goggles */
+.gog { position: relative; }
+.gog summary { list-style: none; cursor: pointer; }
+.gog summary::-webkit-details-marker { display: none; }
+.gog[open] summary { border-color: var(--accent); }
+.gog-menu { position: absolute; z-index: 40; top: calc(100% + 8px); right: 0; width: min(360px, calc(100vw - 32px)); padding: 6px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); box-shadow: 0 18px 44px rgb(0 0 0 / .5); }
+.gog-menu a, .gog-menu button.gog-item { display: block; width: 100%; text-align: left; padding: 9px 12px; border-radius: 9px; background: transparent; border: 0; font: inherit; color: var(--text); cursor: pointer; }
+.gog-menu a:hover, .gog-menu button.gog-item:hover { background: rgb(255 255 255 / .06); }
+.gog-menu a.on { background: rgb(255 75 31 / .12); }
+.gog-menu b { display: block; font-size: 14px; font-weight: 600; }
+.gog-menu small { display: block; font-size: 12.5px; color: var(--dim); margin-top: 1px; }
+.gog-menu hr { border: 0; border-top: 1px solid var(--line); margin: 6px 4px; }
+.gog-edit textarea { width: 100%; min-height: 150px; margin-top: 8px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: 13px/1.5 ui-monospace, monospace; resize: vertical; }
+.gog-edit textarea:focus { outline: none; border-color: var(--accent); }
+.gog-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--dim); }
+
+/* Signaturkit: vätskefyllning och linjer */
+.liq { position: relative; overflow: hidden; isolation: isolate; transition: color .6s ease, border-color .6s ease; }
+.liq::before { content: ""; position: absolute; z-index: -1; left: -15%; width: 130%; bottom: 0; height: 165%; transform: translateY(100%); background: var(--accent); border-radius: 46% 46% 0 0; transition: transform .95s cubic-bezier(.2,.75,.25,1); pointer-events: none; }
+.liq:hover, .liq:focus-visible { color: #fff; border-color: transparent; }
+.liq:hover::before, .liq:focus-visible::before { transform: translateY(0); }
+.nav-link { position: relative; }
+.nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 1.5px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.4,0,.2,1); }
+.nav-link:hover::after { transform: scaleX(1); }
+@media (prefers-reduced-motion: reduce) { .liq::before, .nav-link::after { transition: none; } }

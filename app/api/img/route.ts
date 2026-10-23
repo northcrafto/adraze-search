@@ -27,7 +27,7 @@ export async function GET(req: Request) {
     const up = await fetch(target, {
       signal: ac.signal,
       redirect: "follow",
-      headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/150 Safari/537.36", Accept: "image/avif,image/webp,image/*,*/*;q=0.8" },
+      headers: { "User-Agent": target.hostname === "tile.openstreetmap.org" ? "AdRazeSearch/1.0 (+https://search.adraze.app)" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/150 Safari/537.36", Accept: "image/avif,image/webp,image/*,*/*;q=0.8" },
       cache: "no-store",
     });
     if (!up.ok || !up.body) return new Response(null, { status: 404 });

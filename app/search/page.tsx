@@ -5,11 +5,14 @@ import { Logo } from "@/components/Logo";
 import { SearchBox } from "@/components/SearchBox";
 import { ImageGrid } from "@/components/ImageGrid";
 import { proxied, favicon } from "@/lib/img";
-import { host, search, type Cat } from "@/lib/searx";
+import { host, search, type Cat, type Result } from "@/lib/searx";
+import { GOGGLES, applyGoggle, rulesFor } from "@/lib/goggles";
+import { Goggles } from "@/components/Goggles";
+import { MapView } from "@/components/MapView";
 
 export const dynamic = "force-dynamic";
 
-type Params = { q?: string; cat?: string; p?: string };
+type Params = { q?: string; cat?: string; p?: string; g?: string; r?: string; pl?: string };
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Params> }): Promise<Metadata> {
   const { q } = await searchParams;
@@ -31,9 +34,14 @@ function when(iso: string) {
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Params> }) {
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
-  const cat: Cat = sp.cat === "images" || sp.cat === "videos" || sp.cat === "news" ? sp.cat : "general";
+  const cat: Cat = sp.cat === "images" || sp.cat === "videos" || sp.cat === "news" || sp.cat === "map" ? sp.cat : "general";
   const page = Math.max(1, Math.min(20, parseInt(sp.p ?? "1", 10) || 1));
-  const link = (c: string, p = 1) => `/search?q=${encodeURIComponent(q)}${c !== "general" ? `&cat=${c}` : ""}${p > 1 ? `&p=${p}` : ""}`;
+  const g = sp.g === "egen" || GOGGLES.some((x) => x.id === sp.g) ? (sp.g as string) : "";
+  const r = g === "egen" ? (sp.r ?? "").slice(0, 2000) : "";
+  // Goggle följer med mellan flikar och sidor.
+  const gq = g ? `&g=${g}${r ? `&r=${encodeURIComponent(r)}` : ""}` : "";
+  const link = (c: string, p = 1) => `/search?q=${encodeURIComponent(q)}${c !== "general" ? `&cat=${c}` : ""}${p > 1 ? `&p=${p}` : ""}${gq}`;
+  const pl = Math.max(0, Math.min(30, parseInt(sp.pl ?? "0", 10) || 0));
 
   return (
     <div>
@@ -43,11 +51,17 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           <div className="min-w-0 flex-1 max-w-[680px]"><SearchBox initial={q} small cat={cat} /></div>
           <Link href="/integritet" className="ml-auto hidden text-[13px] hover:underline underline-offset-4 md:block" style={{ color: "var(--dim)" }}>Ingen logg</Link>
         </div>
-        <nav className="mx-auto flex max-w-[1100px] gap-1 px-5 pb-2">
+        <nav className="mx-auto flex max-w-[1100px] flex-wrap gap-1 px-5 pb-2">
           <Link href={link("general")} className={`tab ${cat === "general" ? "on" : ""}`}>Webb</Link>
           <Link href={link("images")} className={`tab ${cat === "images" ? "on" : ""}`}>Bilder</Link>
           <Link href={link("videos")} className={`tab ${cat === "videos" ? "on" : ""}`}>Videor</Link>
           <Link href={link("news")} className={`tab ${cat === "news" ? "on" : ""}`}>Nyheter</Link>
+          <Link href={link("map")} className={`tab ${cat === "map" ? "on" : ""}`}>Kartor</Link>
+          {q && (cat === "general" || cat === "news") && (
+            <div className="ml-auto self-center">
+              <Goggles q={q} cat={cat} g={g} r={r} list={GOGGLES.map(({ id, name, desc }) => ({ id, name, desc }))} />
+            </div>
+          )}
         </nav>
       </header>
 
@@ -57,8 +71,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         ) : (
           // Huvudet och flikarna kommer direkt; resultaten strömmas in när motorn svarat.
           // Utan det här står sidan stilla i en sekund vid varje flikbyte.
-          <Suspense key={`${q}|${cat}|${page}`} fallback={<Skeleton cat={cat} />}>
-            <Results q={q} cat={cat} page={page} link={link} />
+          <Suspense key={`${q}|${cat}|${page}|${g}|${r}|${pl}`} fallback={<Skeleton cat={cat} />}>
+            <Results q={q} cat={cat} page={page} link={link} rules={rulesFor(g, r)} pl={pl} />
           </Suspense>
         )}
       </main>
@@ -89,10 +103,19 @@ function Skeleton({ cat }: { cat: Cat }) {
   );
 }
 
-async function Results({ q, cat, page, link }: { q: string; cat: Cat; page: number; link: (c: string, p?: number) => string }) {
+async function Results({ q, cat, page, link, rules, pl }: { q: string; cat: Cat; page: number; link: (c: string, p?: number) => string; rules: string[]; pl: number }) {
   // Bilder körs alltid med strikt säkert läge; webben med måttligt.
-  const data = await search(q, { cat, page, safe: cat === "images" ? 2 : 1 });
-  const results = data?.results ?? [];
+  const safe = cat === "images" ? 2 : 1;
+  // Med en goggle hämtas två sidor, så det finns kvar att visa när något göms.
+  const [data, extra] = await Promise.all([
+    search(q, { cat, page, safe }),
+    rules.length && (cat === "general" || cat === "news") ? search(q, { cat, page: page + 1, safe }) : Promise.resolve(null),
+  ]);
+  let results: Result[] = data?.results ?? [];
+  if (rules.length && (cat === "general" || cat === "news")) {
+    const seen = new Set<string>();
+    results = applyGoggle([...results, ...(extra?.results ?? [])].filter((x) => !seen.has(x.url) && seen.add(x.url)), rules, host).slice(0, 20);
+  }
   const answers = (data?.answers ?? []).map((a) => (typeof a === "string" ? a : a.answer)).filter(Boolean);
   const box = data?.infoboxes?.[0];
   return (
@@ -153,6 +176,8 @@ async function Results({ q, cat, page, link }: { q: string; cat: Cat; page: numb
           </div>
         )}
 
+        {cat === "map" && results.length > 0 && <Places results={results} pl={pl} link={link} />}
+
         {cat === "images" && results.length > 0 && <ImageGrid items={results.map((r) => ({ ...r, img_src: proxied(r.thumbnail_src || r.img_src), thumbnail_src: undefined }))} />}
 
         {cat === "videos" && results.length > 0 && (
@@ -196,5 +221,51 @@ async function Results({ q, cat, page, link }: { q: string; cat: Cat; page: numb
           </div>
         )}
     </>
+  );
+}
+
+/** Kartor: platslista till vänster, karta över vald plats till höger. */
+function Places({ results, pl, link }: { results: Result[]; pl: number; link: (c: string, p?: number) => string }) {
+  const places = results.filter((x) => x.latitude != null && x.longitude != null).slice(0, 12);
+  if (!places.length) return <p style={{ color: "var(--dim)" }}>Hittade ingen plats.</p>;
+  const sel = places[Math.min(pl, places.length - 1)];
+  const lat = Number(sel.latitude), lon = Number(sel.longitude);
+  const bb = (sel.boundingbox ?? []).map(Number);
+  const addr = (x: Result) => {
+    const a = x.address ?? {};
+    return [[a.road, a.house_number].filter(Boolean).join(" "), [a.postcode, a.locality].filter(Boolean).join(" "), a.country].filter(Boolean).join(", ");
+  };
+  const name = (x: Result) => (x.address?.name || x.title).split(",")[0];
+  const extra = sel as Result & { links?: { label: string; url: string; url_label: string }[]; data?: { key: string; value: string }[]; type?: string };
+  const site = extra.links?.find((l) => l.label === "official website");
+  const phone = extra.links?.find((l) => l.url.startsWith("tel:"));
+  const hours = extra.data?.find((d) => d.key === "opening_hours");
+  return (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,340px)_1fr]">
+      <ul className="order-2 lg:order-1">
+        {places.map((x, i) => (
+          <li key={x.url + i}>
+            <Link href={`${link("map")}&pl=${i}`} className={`place ${x === sel ? "on" : ""}`} scroll={false}>
+              <b>{name(x)}</b>
+              <small>{addr(x) || x.title}</small>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="order-1 lg:order-2">
+        <MapView lat={lat} lon={lon} bb={bb.length === 4 ? bb : undefined} label={name(sel)} />
+        <div className="mt-4">
+          <h2 className="text-[20px] font-semibold tracking-[-0.02em]">{name(sel)}</h2>
+          <p className="mt-1 text-[14.5px]" style={{ color: "var(--dim)" }}>{[extra.type, addr(sel)].filter(Boolean).join(" · ")}</p>
+          {hours && <p className="mt-2 text-[14px]" style={{ color: "#c9ccd2" }}>Öppettider: {hours.value}</p>}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <a className="pill liq" rel="noopener noreferrer" href={`https://www.openstreetmap.org/directions?to=${lat}%2C${lon}#map=16/${lat}/${lon}`}>Vägbeskrivning</a>
+            <a className="pill liq" rel="noopener noreferrer" href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=17/${lat}/${lon}`}>Öppna stor karta</a>
+            {site && <a className="pill liq" rel="noopener noreferrer" href={site.url}>Webbplats</a>}
+            {phone && <a className="pill liq" href={phone.url}>{phone.url_label}</a>}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
