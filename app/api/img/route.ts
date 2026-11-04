@@ -5,6 +5,10 @@ export const dynamic = "force-dynamic";
 
 const MAX_BYTES = 6 * 1024 * 1024;
 const BLOCKED_HOST = /^(localhost|.*\.local|.*\.internal|127\.|10\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$|\[?fc|\[?fd|\[?fe80)/i;
+/* Bara stillbilder som inte kan bära skript. SVG (image/svg+xml) är XML med
+   <script>, och öppnas proxylänken direkt körs det på vår egen domän. Därför
+   en vitlista i stället för "allt som börjar med image/". */
+const SAFE_TYPE = /^image\/(avif|webp|png|apng|jpeg|jpg|pjpeg|gif|bmp|x-ms-bmp|x-icon|vnd\.microsoft\.icon|tiff|jxl|heic|heif)\s*(;|$)/i;
 
 /**
  * Blind bildproxy. Tar bara signerade adresser (se lib/img.ts), hämtar med
@@ -32,7 +36,7 @@ export async function GET(req: Request) {
     });
     if (!up.ok || !up.body) return new Response(null, { status: 404 });
     const type = up.headers.get("content-type") ?? "";
-    if (!/^image\//i.test(type)) return new Response(null, { status: 415 });
+    if (!SAFE_TYPE.test(type)) return new Response(null, { status: 415 });
     const len = Number(up.headers.get("content-length") ?? 0);
     if (len > MAX_BYTES) return new Response(null, { status: 413 });
 
