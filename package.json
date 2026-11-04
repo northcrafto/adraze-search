@@ -21,5 +21,6 @@
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "typescript": "^5"
-  }
+  },
+  "license": "GPL-3.0-only"
 }
